@@ -10,7 +10,7 @@ variable "domain" {
 variable "certmanager_email" {
   description = "Email used to retrieve SSL certificates from Let's Encrypt"
 }
-   
+
 variable "gke_version" {
   description = "Version of GKE to use for the GitLab cluster"
   default     = "1.14"
@@ -34,4 +34,9 @@ variable "gitlab_runner_install" {
 variable "region" {
   default     = "us-central1"
   description = "GCP region to deploy resources to"
+}
+variable "deletion_protection" {
+  type = string
+  description = "Protect instance from deletion."
+  default = true
 }

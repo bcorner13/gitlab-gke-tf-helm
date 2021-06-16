@@ -9,6 +9,7 @@ provider "google-beta" {
 provider "helm" {
   service_account = "tiller"
   install_tiller  = true
+  debug           = true
   namespace       = "kube-system"
 
   kubernetes {
@@ -20,7 +21,6 @@ provider "helm" {
 }
 
 provider "kubernetes" {
-  load_config_file       = false
   host                   = google_container_cluster.gitlab.endpoint
   client_certificate     = base64decode(google_container_cluster.gitlab.master_auth.0.client_certificate)
   client_key             = base64decode(google_container_cluster.gitlab.master_auth.0.client_key)

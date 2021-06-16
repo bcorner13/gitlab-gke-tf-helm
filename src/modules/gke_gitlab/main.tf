@@ -86,12 +86,15 @@ resource "google_service_networking_connection" "private_vpc_connection" {
   service                 = "servicenetworking.googleapis.com"
   reserved_peering_ranges = [google_compute_global_address.gitlab_sql.name]
 }
-
+resource "random_id" "database" {
+  byte_length = 8
+}
 resource "google_sql_database_instance" "gitlab_db" {
   depends_on       = [google_service_networking_connection.private_vpc_connection]
-  name             = "gitlab-db"
+  name             = "gitlab-db-${random_id.database.hex}"
   region           = var.region
   database_version = "POSTGRES_9_6"
+  deletion_protection = var.deletion_protection
 
   settings {
     tier            = "db-custom-4-15360"
@@ -177,11 +180,16 @@ resource "google_storage_bucket" "gitlab-runner-cache" {
   location = var.region
 }
 // GKE Cluster
+data "google_container_engine_versions" "gke_version"{
+  provider = google-beta
+  location = var.region
+  version_prefix = "1.1"
+}
 resource "google_container_cluster" "gitlab" {
   project            = var.project_id
   name               = "gitlab"
   location           = var.region
-  min_master_version = var.gke_version
+  min_master_version = data.google_container_engine_versions.gke_version.latest_master_version
 
   # We can't create a cluster with no node pool defined, but we want to only use
   # separately managed node pools. So we create the smallest possible default
@@ -329,7 +337,7 @@ resource "kubernetes_secret" "gitlab_gcs_credentials" {
   }
 
   data = {
-    gcs-application-credentials-file = "${base64decode(google_service_account_key.gitlab_gcs.private_key)}"
+    gcs-application-credentials-file = base64decode(google_service_account_key.gitlab_gcs.private_key)
   }
 }
 
@@ -372,20 +380,19 @@ resource "null_resource" "sleep_for_cluster_fix_helm_6361" {
   depends_on = [google_container_cluster.gitlab]
 }
 
-resource "helm_release" "gitlab" {
-  name       = "gitlab"
-  repository = data.helm_repository.gitlab.name
-  chart      = "gitlab"
-  version    = "2.3.7"
-  timeout    = 600
-
-  values = [data.template_file.helm_values.rendered]
-
-  depends_on = [google_redis_instance.gitlab,
-    google_sql_database.gitlabhq_production,
-    google_sql_user.gitlab,
-    kubernetes_cluster_role_binding.tiller-admin,
-    kubernetes_storage_class.pd-ssd,
-    null_resource.sleep_for_cluster_fix_helm_6361,
-  ]
-}
+#resource "helm_release" "gitlab" {
+#  name       = "gitlab"
+#  repository = data.helm_repository.gitlab.name
+#  chart      = "gitlab"
+#  version    = "4.12.3"
+#  timeout    = 600
+#  values = [data.template_file.helm_values.rendered]
+#
+#  depends_on = [google_redis_instance.gitlab,
+#    google_sql_database.gitlabhq_production,
+#    google_sql_user.gitlab,
+#    kubernetes_cluster_role_binding.tiller-admin,
+#    kubernetes_storage_class.pd-ssd,
+#    null_resource.sleep_for_cluster_fix_helm_6361,
+#  ]
+#}

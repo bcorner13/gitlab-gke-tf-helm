@@ -1,0 +1,3 @@
+src/deployment/.terraform
+*.tfstate*
+eks_gitlab

@@ -2,9 +2,10 @@
 
 provider "google" {}
 
-// Deployments 
+// Deployments
 module "gitlab" {
   source              = "../modules/gke_gitlab"
-  project_id                 = var.project_id
-  certmanager_email          = var.certmanager_email
+  project_id          = var.project_id
+  certmanager_email   = var.certmanager_email
+  deletion_protection = var.deletion_protection
 }
