@@ -8,7 +8,7 @@ data:
 
 ![GitLab on GKE architecture diagram](deploying-production-ready-gitlab-on-gke-architecture.png)
 
-## Deployment 
+## Deployment
 
 ```
 module "gitlab" {
@@ -24,7 +24,9 @@ Then perform the following commands on the root folder:
 - `terraform plan` to see the infrastructure plan
 - `terraform apply` to apply the infrastructure build
 
-
+## Testing
+If you are interested in testing, and/or want to delete all the resources, add the following flag to your terraform apply
+`--var=deletion_protection=false`
 
 [^]: (autogen_docs_start)
 
@@ -46,10 +48,9 @@ Then perform the following commands on the root folder:
 
 [^]: (autogen_docs_end)
 
-
 ### Software Dependencies
 ### Terraform
-- [Terraform](https://www.terraform.io/downloads.html) 0.12.x
+- [Terraform](https://www.terraform.io/downloads.html) 1.0.x
 - [terraform-provider-google](https://github.com/terraform-providers/terraform-provider-google) plugin v1.8.0
 
 ### Configure a Service Account
@@ -73,8 +74,3 @@ The project has the following folders and files:
 5. providers.tf: project providers (gcp, kubernetes, helm)
 6. versions.tf: required versions
 7. /values.yaml.tpl: Helm values. Learn more about values in helm
-
-
-
-
-
