@@ -24,9 +24,8 @@ Then perform the following commands on the root folder:
 - `terraform plan` to see the infrastructure plan
 - `terraform apply` to apply the infrastructure build
 
-## Testing
-If you are interested in testing, and/or want to delete all the resources, add the following flag to your terraform apply
-`--var=deletion_protection=false`
+## Testing/Deletion
+If you are interested in testing, and/or want to delete all the resources, add the following flag to your terraform apply `-var="deletion_protection=false"`.  You should be able to add this flag after the fact.
 
 [^]: (autogen_docs_start)
 
@@ -38,6 +37,7 @@ If you are interested in testing, and/or want to delete all the resources, add t
 | gitlab\_db\_password | Password for the GitLab Postgres user | string | `""` | no |
 | project\_id | GCP Project to deploy resources | string | n/a | yes |
 | region | GCP region to deploy resources to | string | `"us-central1"` | no |
+| deletion_protection | Allow Deletion of protected resources | string | true | no |
 
 ## Outputs
 
