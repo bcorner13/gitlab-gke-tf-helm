@@ -99,6 +99,7 @@ postgresql:
 
 gitlab-runner:
   install: ${GITLAB_RUNNER_INSTALL}
+  privilged: true
   rbac:
     create: true
   runners:
