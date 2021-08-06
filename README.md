@@ -53,19 +53,39 @@ If you are interested in testing, and/or want to delete all the resources, add t
 - [Terraform](https://www.terraform.io/downloads.html) 1.0.x
 - [terraform-provider-google](https://github.com/terraform-providers/terraform-provider-google) plugin v1.8.0
 
-### Configure a Service Account
-In order to execute this module you must have a Service Account with the
-following project roles:
-- roles/owner
+### Before you begin
+1. [Sign in](https://accounts.google.com/Login) to your Google Account. If you don't have one, [sign up for a new account](https://accounts.google.com/SignUp).
+2. In the Cloud Console, on the project selector page, select or create a Cloud project. [Click here to goto the Project Selector page](o to the project selector page)
+3. Make sure that billing is enabled for your Google Cloud project.  [Learn how to confirm billing is enabled on your project](https://cloud.google.com/billing/docs/how-to/modify-project).
 
-## Install
+#### Note:
+If you don't want to keep the resources for the project. Create a new project and when your done delete the project. This will remove all of the resources associated with the project.
 
+## Prerequisits
 ### Terraform
-Be sure you have the correct Terraform version (0.12.x), you can choose the binary here:
+Be sure you have the correct Terraform version (1.x.x), you can choose the binary here:
 - https://releases.hashicorp.com/terraform/
+
+### gcloud command-line tool
+If you would rather use command line tool instead of the Cloud Shell here is some additional [information] (https://cloud.google.com/sdk/gcloud/)
+
+## Creating prerequisite resources
+1. Open Cloud Shell: [Open Cloud Shell](https://console.cloud.google.com/cloudshell/).
+2. In Cloud Shell, enable the Google Kubernetes Engine, Service Networking, Resource Manager, and Redis APIs:
+
+```
+gcloud config set project VALUE
+
+gcloud services enable \ container.googleapis.com \
+servicenetworking.googleapis.com \
+cloudresourcemanager.googleapis.com \
+redis.googleapis.com
+```
 
 ## File structure
 The project has the following folders and files:
+![File Structure](FileStructure.png)
+
 
 1. /deployment: Terraform deployment execution
 2. main.tf: main file for this module, contains all the resources to create
@@ -74,3 +94,6 @@ The project has the following folders and files:
 5. providers.tf: project providers (gcp, kubernetes, helm)
 6. versions.tf: required versions
 7. /values.yaml.tpl: Helm values. Learn more about values in helm
+
+## resources
+For additional information[ Read This ](https://aymen-segni.com/index.php/2020/02/10/deploy-production-grade-gitlab-on-gke-with-terraform-and-helm/)
