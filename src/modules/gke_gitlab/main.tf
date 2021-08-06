@@ -90,10 +90,10 @@ resource "random_id" "database" {
   byte_length = 8
 }
 resource "google_sql_database_instance" "gitlab_db" {
-  depends_on       = [google_service_networking_connection.private_vpc_connection]
-  name             = "gitlab-db-${random_id.database.hex}"
-  region           = var.region
-  database_version = "POSTGRES_9_6"
+  depends_on          = [google_service_networking_connection.private_vpc_connection]
+  name                = "gitlab-db-${random_id.database.hex}"
+  region              = var.region
+  database_version    = "POSTGRES_9_6"
   deletion_protection = var.deletion_protection
 
   settings {
@@ -180,11 +180,14 @@ resource "google_storage_bucket" "gitlab-runner-cache" {
   location = var.region
 }
 // GKE Cluster
-data "google_container_engine_versions" "gke_version"{
-  provider = google-beta
-  location = var.region
+data "google_container_engine_versions" "gke_version" {
+  provider       = google-beta
+  location       = var.region
   version_prefix = "1.1"
 }
+# Retrieve an access token as the Terraform runner
+data "google_client_config" "provider" {}
+
 resource "google_container_cluster" "gitlab" {
   project            = var.project_id
   name               = "gitlab"
@@ -251,31 +254,6 @@ resource "google_container_node_pool" "gitlab" {
   }
 }
 
-resource "kubernetes_service_account" "tiller" {
-  metadata {
-    name      = "tiller"
-    namespace = "kube-system"
-  }
-}
-
-resource "kubernetes_cluster_role_binding" "tiller-admin" {
-  metadata {
-    name = "tiller-admin"
-  }
-
-  role_ref {
-    api_group = "rbac.authorization.k8s.io"
-    kind      = "ClusterRole"
-    name      = "cluster-admin"
-  }
-
-  subject {
-    kind      = "ServiceAccount"
-    name      = "tiller"
-    namespace = "kube-system"
-  }
-}
-
 resource "kubernetes_storage_class" "pd-ssd" {
   metadata {
     name = "pd-ssd"
@@ -287,7 +265,11 @@ resource "kubernetes_storage_class" "pd-ssd" {
     type = "pd-ssd"
   }
 }
-
+resource "kubernetes_secret" "gke-cluster" {
+  metadata {
+    name = "gke-cluster"
+  }
+}
 resource "kubernetes_secret" "gitlab_pg" {
   metadata {
     name = "gitlab-pg"
@@ -330,6 +312,42 @@ EOT
   }
 }
 
+resource "kubernetes_service_account" "gke-cluster" {
+  metadata {
+    name      = "gke-cluster"
+  }
+  secret {
+    name = "${kubernetes_secret.gke-cluster.metadata.0.name}"
+  }
+}
+
+resource "kubernetes_cluster_role_binding" "gtk-admin" {
+  metadata {
+    name = "gtk-admin"
+  }
+
+  role_ref {
+    api_group = "rbac.authorization.k8s.io"
+    kind      = "ClusterRole"
+    name      = "cluster-admin"
+  }
+  subject {
+    kind      = "User"
+    name      = "admin"
+    api_group = "rbac.authorization.k8s.io"
+  }
+  subject {
+    kind      = "ServiceAccount"
+    name      = "default"
+    namespace = "kube-system"
+  }
+  subject {
+    kind      = "Group"
+    name      = "system:masters"
+    api_group = "rbac.authorization.k8s.io"
+  }
+
+}
 
 resource "kubernetes_secret" "gitlab_gcs_credentials" {
   metadata {
@@ -339,11 +357,6 @@ resource "kubernetes_secret" "gitlab_gcs_credentials" {
   data = {
     gcs-application-credentials-file = base64decode(google_service_account_key.gitlab_gcs.private_key)
   }
-}
-
-data "helm_repository" "gitlab" {
-  name = "gitlab"
-  url  = "https://charts.gitlab.io"
 }
 
 data "google_compute_address" "gitlab" {
@@ -380,19 +393,19 @@ resource "null_resource" "sleep_for_cluster_fix_helm_6361" {
   depends_on = [google_container_cluster.gitlab]
 }
 
-#resource "helm_release" "gitlab" {
-#  name       = "gitlab"
-#  repository = data.helm_repository.gitlab.name
-#  chart      = "gitlab"
-#  version    = "4.12.3"
-#  timeout    = 600
-#  values = [data.template_file.helm_values.rendered]
-#
-#  depends_on = [google_redis_instance.gitlab,
-#    google_sql_database.gitlabhq_production,
-#    google_sql_user.gitlab,
-#    kubernetes_cluster_role_binding.tiller-admin,
-#    kubernetes_storage_class.pd-ssd,
-#    null_resource.sleep_for_cluster_fix_helm_6361,
-#  ]
-#}
+resource "helm_release" "gitlab" {
+  name       = "gitlab"
+  repository = "https://charts.gitlab.io"
+  chart      = "gitlab"
+  version    = "5.1.0"
+  timeout    = 600
+  values     = [data.template_file.helm_values.rendered]
+
+  depends_on = [google_redis_instance.gitlab,
+    google_sql_database.gitlabhq_production,
+    google_sql_user.gitlab,
+    kubernetes_cluster_role_binding.gtk-admin,
+    kubernetes_storage_class.pd-ssd,
+    null_resource.sleep_for_cluster_fix_helm_6361,
+  ]
+}

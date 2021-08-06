@@ -36,7 +36,7 @@ variable "region" {
   description = "GCP region to deploy resources to"
 }
 variable "deletion_protection" {
-  type = string
+  type        = string
   description = "Protect instance from deletion."
-  default = true
+  default     = true
 }

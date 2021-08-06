@@ -13,3 +13,7 @@ variable "deletion_protection" {
   description = "Protect instance from deletion."
   default = true
 }
+variable "gitlab_db_password" {
+  description = "Password for the GitLab Postgres user"
+  default     = ""
+}
