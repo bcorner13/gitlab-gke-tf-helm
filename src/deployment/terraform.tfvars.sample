@@ -1,0 +1,3 @@
+certmanager_email 	= "real.email@address.com"
+project_id        	= "someprojectID"
+deletion_protection	= false
