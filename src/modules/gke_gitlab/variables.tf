@@ -13,7 +13,7 @@ variable "certmanager_email" {
 
 variable "gke_version" {
   description = "Version of GKE to use for the GitLab cluster"
-  default     = "1.14"
+  default     = "1.19"
 }
 
 variable "gitlab_db_password" {
