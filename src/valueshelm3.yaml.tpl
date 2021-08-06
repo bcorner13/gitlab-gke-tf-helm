@@ -1074,21 +1074,21 @@ gitlab:
       matchLabels:
         app: 'gitaly'
 ## https://docs.gitlab.com/charts/charts/gitlab/migrations
-#   migrations:
-#     enabled: false
+  migrations:
+    enabled: true
 ## https://docs.gitlab.com/charts/charts/gitlab/webservice
-#   webservice:
-#     enabled: false
+#  webservice:
+#    enabled: true
 ## https://docs.gitlab.com/charts/charts/gitlab/sidekiq
-#   sidekiq:
-#     enabled: false
+#  sidekiq:
+#    enabled: true
 ## https://docs.gitlab.com/charts/charts/gitlab/gitaly
   gitaly:
     persistence:
       size: 200Gi
       storageClass: "pd-ssd"
 ## https://docs.gitlab.com/charts/charts/gitlab/gitlab-shell
-#   gitlab-shell:
-#     enabled: false
+  gitlab-shell:
+    enabled: true
 ## https://docs.gitlab.com/charts/charts/gitlab/gitlab-grafana
-#   gitlab-grafana:
+  gitlab-grafana:
